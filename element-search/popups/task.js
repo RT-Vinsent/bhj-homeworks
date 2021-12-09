@@ -6,6 +6,8 @@ let modalSuccess = document.getElementById('modal_success'); // получаем
 let modalClose = document.getElementsByClassName('modal__close'); // получаем псевдо массив modal__close
 let showSuccess = document.querySelector('.show-success'); // получаем элемент .show-success
 
+let modalCloseArr = Array.from(modalClose); // не знаю нужно ли это преобразование в массив
+
 modalMain.classList.add('modal_active'); // В момент запуска скрипта, показывает окно #modal_main
 
 function modalCloseFunc() { // функция для закрытия окна
@@ -13,8 +15,8 @@ function modalCloseFunc() { // функция для закрытия окна
     modalSuccess.classList.remove('modal_active'); // удаляет класс modal_active
 }
 
-for (let i = 0; i < modalClose.length; i += 1) { // цикл для перебора псевдо массива
-    modalClose[i].addEventListener('click', modalCloseFunc); // назначаем функцию закрития окна на клик
+for (let i = 0; i < modalCloseArr.length; i += 1) { // цикл для перебора массива
+    modalCloseArr[i].addEventListener('click', modalCloseFunc); // назначаем функцию закрития окна на клик
 }
 
 showSuccess.onclick = function() { // функция для клика по элементу с классом show-success
