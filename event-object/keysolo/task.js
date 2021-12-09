@@ -61,7 +61,7 @@ class Game {
       }
     }
 
-    window.addEventListener('keypress', keyPressFunc); // событие на странице по нажатой клавиши
+    window.addEventListener('keyup', keyPressFunc); // событие на странице по нажатой клавиши
   }
 
   success() {
