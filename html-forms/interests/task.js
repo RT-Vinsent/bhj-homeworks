@@ -36,7 +36,7 @@ function changeCheckbox(interestsActive) { // функция изменения 
     let parent = parentInterest.querySelector('label > .interest__check');
 
     // массив сеседних чекбоксов
-    let siblingCheckbox = Array.from(parentInterest.querySelectorAll('.interests_active .interest__check'));
+    let siblingCheckbox = Array.from(interestsActive.querySelectorAll('.interest__check'));
 
     let daughterTrueFalseArr = []; // массив для значений чекбокса
 
