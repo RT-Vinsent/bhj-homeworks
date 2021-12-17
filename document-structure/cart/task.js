@@ -82,8 +82,8 @@ for (let i = 0; i < product.length; i++) { // цикл по поналеям п�
             cartProductRemote(); // функция удаления товара из корзины по клику на него
             cartImgAnimation(valueImg, img, productId); // анимация картинки
 
-            localStorage.setItem('keyCountCart', keyCount); // записываем счётчикКлюч в localStorage
             keyCount++; // увеличиваем счётчикКлюч товаров в корзине
+            localStorage.setItem('keyCountCart', keyCount); // записываем счётчикКлюч в localStorage
         }
     });
 }
