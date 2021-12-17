@@ -8,11 +8,11 @@ let keyCount = 0; // счётчикКлюч товаров в корзине
 let myStorage = {}; // объект моего хранилища
 
 // спарсим myStorage из localStorage обратно в объект
-let returnMyStorage = JSON.parse(localStorage.getItem("myStorageKey"));
+let returnMyStorage = JSON.parse(localStorage.getItem("myStorageKeyCart"));
 
 if (returnMyStorage) { // если в localStorage есть моё хранилище  
     myStorage = returnMyStorage; // то Моё хранилище равняется хранилищу в localStorage
-    keyCount = localStorage.getItem('keyCount'); // переназнаает keyCount из keyCount в localStorage
+    keyCount = localStorage.getItem('keyCountCart'); // переназнаает keyCount из keyCountCart в localStorage
 }
 
 for (let key in returnMyStorage) { // обход по объекту 
@@ -82,7 +82,7 @@ for (let i = 0; i < product.length; i++) { // цикл по поналеям п�
             cartProductRemote(); // функция удаления товара из корзины по клику на него
             cartImgAnimation(valueImg, img, productId); // анимация картинки
 
-            localStorage.setItem('keyCount', keyCount); // записываем счётчикКлюч в localStorage
+            localStorage.setItem('keyCountCart', keyCount); // записываем счётчикКлюч в localStorage
             keyCount++; // увеличиваем счётчикКлюч товаров в корзине
         }
     });
@@ -98,7 +98,7 @@ function cartProductRemote() { // функция удаления товара �
         productCarts[0].remove(); // удаление продукта из карзины
 
         delete myStorage[dataKey]; // удаления продукта в корзине из хранилища по dataKey
-        localStorage.setItem('myStorageKey', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
+        localStorage.setItem('myStorageKeyCart', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
 
         if (cartProducts.querySelectorAll('.cart__product').length === 0) {
             cart.style.display = 'none';
@@ -149,5 +149,5 @@ function cartImgAnimation(valueImg, img, productId) { // анимация кар
 
 function updateMyStorage(key, html) { // функция обновляет моё хранилище
     myStorage[key] = html; // добавляем продукт в корзине в моё хранилище
-    localStorage.setItem('myStorageKey', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
+    localStorage.setItem('myStorageKeyCart', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
 }
