@@ -4,21 +4,14 @@
 let cart = document.querySelector('.cart'); // корзина
 let cartProducts = document.querySelector('.cart__products'); // продукты корзины
 let product = Array.from(document.querySelectorAll('.product')); // элементы товаров
-let keyCount = 0; // счётчикКлюч товаров в корзине
-let myStorage = {}; // объект моего хранилища
+let localCart = JSON.parse(localStorage.getItem("cart")); // парсим cart из localStorage
 
-// спарсим myStorage из localStorage обратно в объект
-let returnMyStorage = JSON.parse(localStorage.getItem("myStorageKeyCart"));
-
-if (returnMyStorage) { // если в localStorage есть моё хранилище  
-    myStorage = returnMyStorage; // то Моё хранилище равняется хранилищу в localStorage
-    keyCount = localStorage.getItem('keyCountCart'); // переназнаает keyCount из keyCountCart в localStorage
-}
-
-for (let key in returnMyStorage) { // обход по объекту 
-    cartProducts.insertAdjacentHTML('afterBegin', returnMyStorage[key]); // вставляем продукт корзины из хранилища в DOM
-    cartProductRemote() // вызываем функцию которая назначает удаления пррдукта из корзины при клике на него
-}
+if (localCart != null) { // если в localStorage есть cart  
+    for (let i = 0; i < localCart.length; i++) { // то цикл по массиву
+        htmlCartProductAdd(localCart[i].productId, localCart[i].img, localCart[i].valueText); // добавляем html разметку в DOM
+        cartProductRemote() // вызываем функцию которая назначает удаления пррдукта из корзины при клике на него
+    }
+};
 
 if (cartProducts.querySelectorAll('.cart__product').length === 0) {
     cart.style.display = 'none'; // если товаров в корзине нету, она скрывается
@@ -60,30 +53,18 @@ for (let i = 0; i < product.length; i++) { // цикл по поналеям п�
         if (productCart) { // если элемент в корзине уже есть, то обновляем кол-во товара
             let cartProductCount = productCart.querySelector('.cart__product-count'); // элемент кол-ва
             let count = +cartProductCount.innerText; // считываем кол-во этого товара в корзине
-            let oldKey = productCart.dataset.key;
+            let newCount = +valueText + count; // новое кол-во этого товара
            
-            cartProductCount.innerText = +valueText + count; // добавляем новое кол-во товара в корзину
+            cartProductCount.innerText = newCount; // добавляем новое кол-во товара в корзину
             
             cartImgAnimation(valueImg, img, productId); // анимация картинки
-            updateMyStorage(oldKey, productCart.outerHTML) // функция обновляет моё хранилище
+            updateLocalStorage(null, productId, img, newCount);  // функция обновляет моё хранилище
 
         } else { // если товара в корзине нет, то добавляем его
-            // разметка которая присваивает значения сетайди, картинки, и кол-ва товара
-            let html = `
-            <div class="cart__product" data-id="${productId}" data-key="${keyCount}">
-                <img class="cart__product-image" src="${img}">
-                <div class="cart__product-count">${valueText}</div>
-            </div>
-            `;
-
-            cartProducts.insertAdjacentHTML('afterBegin', html); // добавляем продукт в корзину
-            
-            updateMyStorage(keyCount, html) // функция обновляет моё хранилище
+            htmlCartProductAdd(productId, img, valueText); // добавляем html разметку в DOM
+            updateLocalStorage(null, productId, img, valueText);  // функция обновляет моё хранилище
             cartProductRemote(); // функция удаления товара из корзины по клику на него
             cartImgAnimation(valueImg, img, productId); // анимация картинки
-
-            keyCount++; // увеличиваем счётчикКлюч товаров в корзине
-            localStorage.setItem('keyCountCart', keyCount); // записываем счётчикКлюч в localStorage
         }
     });
 }
@@ -93,12 +74,11 @@ function cartProductRemote() { // функция удаления товара �
 
     // productCarts[0], потому что новый продукт всегда с индексом 0
     productCarts[0].addEventListener('click', function(evt) { // клик по продукту
-        let dataKey = productCarts[0].dataset.key; // dataKey продукта
+        let dataId = productCarts[0].dataset.id; // dataId продукта
+
+        updateLocalStorage(dataId);  // функция обновляет моё хранилище
 
         productCarts[0].remove(); // удаление продукта из карзины
-
-        delete myStorage[dataKey]; // удаления продукта в корзине из хранилища по dataKey
-        localStorage.setItem('myStorageKeyCart', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
 
         if (cartProducts.querySelectorAll('.cart__product').length === 0) {
             cart.style.display = 'none';
@@ -115,10 +95,11 @@ function cartImgAnimation(valueImg, img, productId) { // анимация кар
     let leftCart = productCart.getBoundingClientRect().left; // находим левую сторону картинки в корзине
 
     let count = 1; // счётчик выполнения интервала
+    let countMax = 15; // максимальное значение счётчик выполнения интервала
 
     // пятнадцатая часть от разницы сторон
-    let differenceTop = (top - topCart) / 15;
-    let differenceLeft = (leftCart - left) / 15;
+    let differenceTop = (top - topCart) / countMax;
+    let differenceLeft = (leftCart - left) / countMax;
 
     let newTop = top - differenceTop; // новая смещёная высота картинки
     let newLeft = left + differenceLeft; // новая смещёная стороны кратинки
@@ -139,7 +120,7 @@ function cartImgAnimation(valueImg, img, productId) { // анимация кар
         newTop = newTop - differenceTop; // смещаем высоту картинки
         newLeft = newLeft + differenceLeft; // смещаем сторону картинки
 
-        if (count === 14) { // если интервал выполнен 14 раз
+        if (count === countMax) { // если интервал выполнен максимальное кол-во раз
             clearInterval(intervalID); // удаление интервала
             imgAnimation.remove(); // удаление картинки анимации
         }
@@ -147,7 +128,37 @@ function cartImgAnimation(valueImg, img, productId) { // анимация кар
     }, 20, count)
 }
 
-function updateMyStorage(key, html) { // функция обновляет моё хранилище
-    myStorage[key] = html; // добавляем продукт в корзине в моё хранилище
-    localStorage.setItem('myStorageKeyCart', JSON.stringify(myStorage)); // обновляем моё хранилище в localStorage
+function updateLocalStorage(del, productId, img, valueText) { // функция обновляет localStorage
+    let cart = JSON.parse(localStorage.getItem("cart")); // парсим cart из localStorage
+    
+    if (cart != null && productId != null) {
+        const productAdd = cart.findIndex(entry => entry.productId === productId); // ищем продукт в массиве
+        if (productAdd != -1) {
+            cart.splice(productAdd, 1, {productId, img, valueText}) // перезаписывает объект в массиве
+        } else {
+            cart.push({productId, img, valueText});  // пушит в массив объект
+        } 
+    }
+
+    if (cart === null && productId != null) {
+        cart = [{productId, img, valueText}];   // создаёт массив c объектом
+    }
+
+    if (cart != null && del != null) {
+        const product = cart.find(entry => entry.productId === del); // ищем продукт в массиве
+        cart.splice(cart.indexOf(product), 1); // удаляет продукт из массива
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart)); // перезаписываем cart в localStorage
+}
+
+function htmlCartProductAdd(productId, img, valueText) { // добавляем html разметку в DOM
+    let html = `
+    <div class="cart__product" data-id="${productId}">
+        <img class="cart__product-image" src="${img}">
+        <div class="cart__product-count">${valueText}</div>
+    </div>
+    `;
+
+    cartProducts.insertAdjacentHTML('afterBegin', html); // добавляем продукт в корзину
 }
