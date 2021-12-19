@@ -10,7 +10,7 @@ const xhr = new XMLHttpRequest(); // создаём объект
 
 if (localValute != null) { // если в localStorage есть localValute  
     for (let prop in localValute) { // обход свойств объекта localValute
-        htmlCartProductAdd(localValute[prop]); // функция принимает объект, делает разметку и вставляет в DOM
+        htmlAdd(localValute[prop]); // функция принимает объект, делает разметку и вставляет в DOM
     }
 };
 
@@ -25,7 +25,7 @@ xhr.addEventListener('readystatechange', () => { // событие readystatecha
         items.innerHTML = ''; // очищаем страницу от курсов валют
 
         for (let prop in valute) { // обход свойств объекта valute
-            htmlCartProductAdd(valute[prop]); // функция принимает объект, делает разметку и вставляет в DOM
+            htmlAdd(valute[prop]); // функция принимает объект, делает разметку и вставляет в DOM
         }
 	}
 })
@@ -33,7 +33,7 @@ xhr.addEventListener('readystatechange', () => { // событие readystatecha
 xhr.open('get', url); // создаём запрос
 xhr.send(); // отправляем запрос 
 
-function htmlCartProductAdd(value) { // функция принимает объект, делает разметку и вставляет в DOM
+function htmlAdd(value) { // функция принимает объект, делает разметку и вставляет в DOM
     let html = `
     <div class="item">
         <div class="item__code">
