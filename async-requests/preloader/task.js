@@ -9,6 +9,7 @@ const url = 'https://netology-slow-rest.herokuapp.com'; // ссылка
 const xhr = new XMLHttpRequest(); // создаём объект
 
 if (localValute != null) { // если в localStorage есть localValute  
+    loader.classList.remove('loader_active'); // выключает индикатор загрузки
     for (let prop in localValute) { // обход свойств объекта localValute
         htmlAdd(localValute[prop]); // функция принимает объект, делает разметку и вставляет в DOM
     }
