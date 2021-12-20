@@ -4,44 +4,30 @@
 let pollTitle = document.getElementById('poll__title');
 let pollAnswers = document.getElementById('poll__answers');
 let body = document.querySelector('body');
-
-const url = 'https://netology-slow-rest.herokuapp.com/poll.php'; // ссылка
 const xhrGet = new XMLHttpRequest(); // создаём объект
 
 xhrGet.addEventListener('readystatechange', () => { // событие readystatechange
-	if (xhrGet.readyState === xhrGet.DONE) { // если DONE
+	if (xhrGet.readyState === xhrGet.DONE && xhrGet.status == 200) { // если DONE
         let survey = JSON.parse(xhrGet.responseText); // текст ответа сервера
 
         pollTitle.innerText = survey.data.title; // вставляем заголовок вопроса в DOM
 
         for (let i = 0; i < survey.data.answers.length; i++) { // цикл по массиву ответов
-            htmlAddButton(survey.data.answers[i]); // функция вставляет кнопки с ответами
-            buttonVote(i, survey.id, survey.data.answers[i]); // функция голосования (клик по кнопке)
+            // вставляет кнопки с ответами в DOM
+            pollAnswers.insertAdjacentHTML('beforeEnd', `<button style="margin-right: 3px;" class="poll__answer">${survey.data.answers[i]}</button>`);
+            
+            let pollAnswer = pollAnswers.querySelectorAll('.poll__answer'); // список вопросов
+            pollAnswer[i].addEventListener('click', function() { // событие клик по кнопке
+                voiceWindow(i, survey.id, survey.data.answers[i]); // функция запускает модальное окно
+            })
         }
 	}
 })
 
-xhrGet.open('get', url); // создаём запрос
+xhrGet.open('get', 'https://netology-slow-rest.herokuapp.com/poll.php'); // создаём запрос
 xhrGet.send(); // отправляем запрос 
 
-function htmlAddButton(value) { // функция принимает объект, делает разметку и вставляет в DOM
-    let html = `
-    <button class="poll__answer">
-        ${value}
-    </button>`; // разметка кнопки
-    pollAnswers.insertAdjacentHTML('beforeEnd', html); // добавляем html разметку в DOM
-}
-
-
-function buttonVote(index, id, answer) { // функция голосования (клик по кнопке)
-    let pollAnswer = pollAnswers.querySelectorAll('.poll__answer'); // списко вопросов
-
-    pollAnswer[index].addEventListener('click', function() { // событие клик по кнопке
-        voiceWindow(index, id, answer); // функция запускает модальное окно
-    })
-}
-
-// ниже функция из 56 строк, которую мог заменить простой alert, но мы же не ищем лёгкий путей))
+// ниже 67 строк кода, которые мог заменить простой alert, но alert же для слабаков))
 function voiceWindow(index, id, answer) { // запускает модальное окно
     let modal = document.createElement('div'); // создаём элемент див обёртка
     modal.style = `
@@ -72,9 +58,8 @@ function voiceWindow(index, id, answer) { // запускает модально
         align-items: center;
     `; // задаём стили
 
-    modalContent.innerHTML = `
-    <div>Спасибо, ваш голос ${answer} засчитан!</div><hr style="margin-top: 22px;" width="90%" color="#ff0000" />
-    `; // вставляем текст в модальное окно и линию
+    // вставляем текст в модальное окно и линию
+    modalContent.innerHTML = `<div>Спасибо, ваш голос ${answer} засчитан!</div><hr style="margin-top: 22px;" width="90%" color="#ff0000" />`;
 
     let modalButton = document.createElement('a'); // создаём элемент кнопки закрытия
     modalButton.classList.add('modal__close'); // задаём класс, что бы потом найти
@@ -113,7 +98,7 @@ function modalClose(modal, id, index) { // функция закрытия мо�
         xhrPost.setRequestHeader( 'Content-type', 'application/x-www-form-urlencoded' ); // задаёт заголовок
         xhrPost.send(`vote=${id}&answer=${index}`); // отправляем запрос с телом
         xhrPost.addEventListener('readystatechange', () => { // событие readystatechange
-            if (xhrPost.readyState === xhrPost.DONE) { // если готово
+            if (xhrPost.readyState === xhrPost.DONE && xhrPost.status == 200) { // если готово
                 let stat = JSON.parse(xhrPost.responseText).stat; // ответа сервера
 
                 pollAnswers.innerText = ''; // удаляем кнопки с ответами
@@ -122,7 +107,9 @@ function modalClose(modal, id, index) { // функция закрытия мо�
                 let votesAll = stat.reduce(function(prev, curr) { return prev + curr.votes }, 0);
 
                 for (let i = 0; i < stat.length; i++) { // цикл по массиву статистики
-                    htmlAddStat(stat[i], votesAll); // функция вставляет статистику
+                    let procent = (stat[i].votes / (votesAll / 100)).toFixed(2); // вычисляем процент голосов
+                    // вставляет статистикув DOM
+                    pollAnswers.insertAdjacentHTML('beforeEnd', `<div>${stat[i].answer}: <b>${procent}%</b></div>`);
                 }
                 nextAnswer(); // функция Следующий вопрос
             }
@@ -130,24 +117,16 @@ function modalClose(modal, id, index) { // функция закрытия мо�
     })
 }
 
-function htmlAddStat(value, votesAll) { // функция вставляет статистику
-    let procent = (value.votes / (votesAll / 100)).toFixed(2); // вычисляем процент голосов
-    let html = `<div>${value.answer}: <b>${procent}%</b></div>`; // разметка статистики
-    pollAnswers.insertAdjacentHTML('beforeEnd', html); // добавляем html разметку в DOM
-}
-
-// данная фича наверное бессмысленна на практике, но для наглядности норм, 
-// хотя наверное можно было просто запускать обновление страницы.
+// и снова 12 строк не нужного кода, сделал для практики.
 function nextAnswer() { // функция Следующий вопрос
-    let html = `<button class="next__answer" style="margin-top: 20px;">Следующий вопрос</button>`; // разметка кнопки nextAnswer
-    pollAnswers.insertAdjacentHTML('beforeEnd', html); // добавляем html разметку в DOM
+    // добавляем кнопку nextAnswer в DOM
+    pollAnswers.insertAdjacentHTML('beforeEnd', '<button class="next__answer" style="margin-top: 20px;">Следующий вопрос</button>');
 
     let nextAnswerButton = pollAnswers.querySelector('.next__answer'); // кнопка Следующий вопрос
-
     nextAnswerButton.addEventListener('click', function() { // событие клика по кнопке Следующий вопрос
         pollTitle.innerHTML = ''; // очищаем заголовок
         pollAnswers.innerHTML = ''; // очищаем блок с вопросами 
-        xhrGet.open('get', url); // создаём запрос get
+        xhrGet.open('get', 'https://netology-slow-rest.herokuapp.com/poll.php'); // создаём запрос get
         xhrGet.send(); // отправляем запрос 
     })
 }
